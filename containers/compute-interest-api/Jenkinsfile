@@ -1,0 +1,36 @@
+pipeline {
+  agent any
+  environment {
+    // Determines which env both apps will be compiled for.
+    BUILD_ENV='dev' // CHOOSE FROM: 'dev', 'stg', 'prod'.
+    APP_NAME_BACKEND='helloworld-api'
+  }
+  stages {
+    /////////////////////////////////////////////////////
+    // BACK END
+    /////////////////////////////////////////////////////
+    stage('Clone Git Repo | Backend') {
+      steps {
+        dir('src/backend') {
+          checkout([$class: 'GitSCM', branches: [[name: '*/master']],
+          userRemoteConfigs: [[url: 'https://github.com/jestevez-claro/spring-boot-microservices-on-kubernetes.git']]])
+        }
+      }
+    }
+    stage('Build App | Backend') {
+      steps {
+        dir('src/backend') {
+          sh 'JAVA_HOME=/usr/lib/jvm/java-17-openjdk mvn clean install'
+        }
+      }
+    }
+    stage('Build Docker Image | Backend') {
+      steps {
+        sh 'docker build -f ./docker/Dockerfile.backend \
+          --build-arg BUILD_ENV=$BUILD_ENV \
+          -t $APP_NAME_BACKEND:$BUILD_ENV \
+          ./src/backend'
+      }
+    }
+  }
+}
