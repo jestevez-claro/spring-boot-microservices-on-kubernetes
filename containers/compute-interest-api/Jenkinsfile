@@ -29,7 +29,7 @@ pipeline {
         sh 'docker build -f ./containers/compute-interest-api/Dockerfile \
           --build-arg BUILD_ENV=$BUILD_ENV \
           -t $APP_NAME_BACKEND:$BUILD_ENV \
-          ./src/backend'
+          .'
       }
     }
   }
